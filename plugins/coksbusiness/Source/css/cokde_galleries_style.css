@@ -1,0 +1,5 @@
+.img-thumb-gallery{display: block; margin-right: 5px; margin-bottom: 10px; position: relative; width:100px; float:left; border-radius:3px; border: 1px solid #CCC; overflow: hidden;}
+.img-thumb-gallery>img{width:100px; height:100px;}
+a.ckd_remove_me{border-radius: 0; position: absolute; bottom: 40%; left:0; padding: 5px 0; background: rgba(100,100,100,0.75); display:none;  color:#FFF; text-decoration: none; text-align: center; width: 100px;}
+.img-thumb-gallery:hover a.ckd_remove_me{display: block; }
+a.ckd_remove_me:hover{text-decoration: none; background: rgba(100,100,100,1;}

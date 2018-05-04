@@ -1,0 +1,71 @@
+<ul class="account-nav-list">
+	<?php  
+	if(is_member_logged_in()){ 
+		$loginText = "My account"; 
+	}
+	else {
+		$loginText = "Sign in"; 
+	}
+	?>
+	<li><a href="#" class="account"><?=$loginText?></a></li>
+	<?php 
+	if(is_member_logged_in()){ 
+		echo "<li\"last\"><a href=\"".site_url("members/logout.php")."\" class=\"logout\">Logout</a></li>";
+	} else { 
+		echo "<li class=\"last\"><a href=\"#\" class=\"register\">Register</a></li>";
+	}
+	?>
+</ul>
+<div id="top_user_access_sign_up" class="top_user_access expand_parent expand_parent_expanded">
+	<div class="top_user_access_expand_wrapper expand_wrapper" style="">
+		<div class="top_user_access_expand_container expand_container">
+			<div id="top_user_access_sign_up_facebook" class="top_user_access_button_container top_user_access_button_container_facebook">
+				<a href="/facebook_login.php" class="pop_up top_user_access_button" target="_blank">Sign up with Facebook</a>
+			</div>
+			<div id="top_user_access_sign_up_linkedin" class="top_user_access_button_container top_user_access_button_container_linkedin">
+				<a href="/linkedin_login.php" class="pop_up top_user_access_button" target="_blank">Sign up with LinkedIn</a>
+			</div>
+			<div id="top_user_access_sign_up_googleplus" class="top_user_access_button_container top_user_access_button_container_googleplus">
+				<a href="/googleplus_login.php" class="pop_up top_user_access_button" target="_blank">Sign up with Google</a>
+			</div>
+			<div id="top_user_access_sign_up_email" class="top_user_access_button_container top_user_access_button_container_email">
+				<a href="<?php echo get_permalink(51);?>" class="top_user_access_button">Sign up with Email</a>
+			</div> 
+			<div class="top_user_access_expand_close expand_close">
+				<span></span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="top_user_access_login" class="top_user_access expand_parent expand_parent_expanded">
+	<div class="top_user_access_expand_wrapper expand_wrapper" style="">
+		<div class="top_user_access_expand_container expand_container">
+			<?php if(!is_member_logged_in()){ ?>
+			<div id="top_user_access_login_facebook" class="top_user_access_button_container top_user_access_button_container_facebook">
+				<a href="/facebook_login.php" class="pop_up top_user_access_button" target="_blank">Sign in with Facebook</a>
+			</div>
+			<div id="top_user_access_login_linkedin" class="top_user_access_button_container top_user_access_button_container_linkedin">
+				<a href="/linkedin_login.php" class="pop_up top_user_access_button" target="_blank">Sign in with LinkedIn</a>
+			</div>
+			<div id="top_user_access_login_googleplus" class="top_user_access_button_container top_user_access_button_container_googleplus">
+				<a href="/googleplus_login.php" class="pop_up top_user_access_button" target="_blank">Sign in with Google</a>
+			</div>
+			<div id="top_user_access_login_email" class="top_user_access_button_container top_user_access_button_container_email">
+				<a href="/members/login.php?login_state=signup" class="top_user_access_button login">Sign in with Email</a>
+			</div> 
+			<?php } else { ?>
+			<div id="top_user_access_dashboard" class="top_user_access_button_container top_user_access_button_container_dashboard">
+				<a href="<?php echo site_url("members/dashboard.php");?>" class="top_user_access_button dashboard">Dashboard</a>
+			</div> 
+			
+			<?php } ?>
+			<div class="top_user_access_expand_close expand_close">
+				<span></span>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+

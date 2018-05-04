@@ -1,0 +1,44 @@
+sp-quantity {
+    width:124px;
+    height:42px;
+    font-family:"ProximaNova Bold", Helvetica, Arial;
+}
+.sp-minus {
+    width:40px;
+    height:40px;
+    border:1px solid #e1e1e1;
+    float:left;
+    text-align:center;
+}
+.sp-input {
+    width:40px;
+    height:40px;
+    border:1px solid #e1e1e1;
+    border-left:0px solid black;
+    float:left;
+}
+.sp-plus {
+    width:40px;
+    height:40px;
+    border:1px solid #e1e1e1;
+    border-left:0px solid #e1e1e1;
+    float:left;
+    text-align:center;
+}
+.sp-input input {
+    width:30px;
+    height:34px;
+    text-align:center;
+    font-family:"ProximaNova Bold", Helvetica, Arial;
+    border: none;
+}
+.sp-input input:focus {
+    border:1px solid #e1e1e1;
+    border: none;
+}
+.sp-minus a, .sp-plus a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding-top: 5px;
+}

@@ -1,0 +1,519 @@
+<?php 
+add_action('admin_menu', 'redis_plugin_menu');
+
+add_action( 'init', 'member_init_external' );
+function member_init_external()
+{
+	load_wp_headjscss();
+    add_rewrite_rule( 'members.php$', 'index.php?members_page=1', 'top' );
+	add_rewrite_rule( 'members/logout.php$', 'index.php?members_page=2', 'top' );
+	add_rewrite_rule( 'add_listing.php$', 'index.php?members_page=3', 'top' );
+}
+
+add_filter( 'query_vars', 'member_query_vars' );
+function member_query_vars( $query_vars )
+{
+    $query_vars[] = 'members_page';
+    return $query_vars;
+}
+
+add_action( 'parse_request', 'member_parse_request' );
+function member_parse_request( &$wp )
+{
+	if ( array_key_exists( 'members_page', $wp->query_vars ) ) {
+		switch($wp->query_vars["members_page"]){
+			case "1";
+			include REDIS_WP_MEMBERSHIP_PATH."extra/members.php";
+			break;
+			case "2";
+			include REDIS_WP_MEMBERSHIP_PATH."extra/logout.php";
+			break;
+			case "3";
+			include REDIS_WP_MEMBERSHIP_PATH."extra/add_listing.php";
+			break;
+		}
+       
+        exit();
+    }
+    return;
+}
+
+
+function load_custom_wp_admin_style($hook) {
+   /*  if($hook != 'toplevel_page_mypluginname') {
+        return;
+    } */
+    wp_enqueue_style( 'custom_wp_admin_css', REDIS_WP_MEMBERSHIP_URL . '/skin/backend/css/redismember.css' );
+	wp_enqueue_script( 'my_custom_script', REDIS_WP_MEMBERSHIP_URL . '/skin/backend/js/redismember.js' );
+}
+add_action( 'admin_enqueue_scripts', 'load_custom_wp_admin_style' );
+
+function load_wp_headjscss(){
+	//wp_enqueue_style( 'custom_wp_front_css', REDIS_WP_MEMBERSHIP_URL . '/skin/frontend/css/redismember.css' );
+	//wp_enqueue_script( 'my_custom_script', REDIS_WP_MEMBERSHIP_URL . '/skin/frontend/js/redismember.js' );
+
+}
+
+
+function redis_plugin_menu() {
+	add_menu_page('Membership Settings', 'Member Settings', 'administrator', 'redis-plugin-settings', 'redis_plugin_settings_page', 'dashicons-admin-generic');
+	add_submenu_page('redis-plugin-settings', 'Members', 'Members', 'manage_options', 'member-list', 'redis_plugin_members_page');
+	add_submenu_page('redis-plugin-settings', 'Add Member', 'Add Member', 'manage_options', 'member-add', 'redis_plugin_members_add_page');
+}
+
+function redis_plugin_settings_page() {
+  // 
+  echo "Test";
+}
+
+function redis_plugin_members_page(){
+	require REDIS_WP_MEMBERSHIP_PATH."view/backend/member_list.php";
+}
+
+function redis_plugin_members_add_page(){
+	if(isset($_REQUEST["member_id"])){
+		global $wpdb;
+		$table = $wpdb->prefix."redis_members_tbl";
+		$results = $wpdb->get_results("SELECT * FROM  $table WHERE member_id = ". $_REQUEST["member_id"]);
+		if(count($results) >= 1){
+			list($member) = $results;
+		}
+		require_once REDIS_WP_MEMBERSHIP_PATH."view/backend/member_edit.php";
+		
+	}
+	else {
+		require_once REDIS_WP_MEMBERSHIP_PATH."view/backend/member_add.php";
+	}
+	
+}
+
+
+add_action( 'wp_ajax_save_member', 'prefix_ajax_save_member' );
+add_action( 'wp_ajax_nopriv_save_member', 'prefix_ajax_save_member' );
+
+add_action( 'wp_ajax_login_member', 'prefix_ajax_login_member' );
+add_action( 'wp_ajax_nopriv_login_member', 'prefix_ajax_login_member' );
+
+function prefix_ajax_login_member() {
+	$data['error'] = TRUE;
+	$data["redirect"] = false;
+	foreach($_POST['params'] as $variable){
+		$params[$variable["name"]] = $variable["value"];
+	}
+	
+	global $wpdb;
+	$table = $wpdb->prefix."redis_members_tbl";
+	$results = $wpdb->get_results("SELECT * FROM  $table WHERE user_name = ". $params["username"]);
+	if(count($results) >= 1){
+		session_start();
+		$membership = array(
+			"member_username" => $params["username"],
+			"member_email" => "",
+			"is_member_logged_in" => 200
+		);
+		$_SESSION["membership"] = $membership;
+		if($_SESSION["membership"]["is_member_logged_in"]){
+			$data["redirect"] = true;
+			$data["error"] = false;		
+		} 
+	}
+	else {
+		$data['message'] = "Your account not found!";	
+	}
+	
+	$data['error'] = TRUE;
+	
+	if($data['error']){
+		$format = '
+		<div class="error">
+			<p><strong>ERROR</strong>: %s</p>	
+		</div>';
+	}
+	echo json_encode($data);
+	wp_die();
+	exit();
+}
+
+function prefix_ajax_save_member() {
+		$data['error'] = TRUE;
+		foreach($_POST['params'] as $variable){
+			$params[$variable["name"]] = $variable["value"];
+		}
+		
+		
+		if(!empty($params)){
+			if(!empty($params['email'])){
+				if(!filter_var($params['email'], FILTER_VALIDATE_EMAIL)){
+					$data['error'] = TRUE;
+					$data['message'] = 'Please input valid email';
+				}else{
+					$email = sanitize_text_field($params['email']);
+					global $wpdb;
+					$table = $wpdb->prefix."redis_members_tbl";
+					$hasils = $wpdb->get_results("SELECT * FROM  $table WHERE `email` ='" .$params['email']."'");
+					if(count($hasils) > 0 ){
+						$data['error'] = TRUE; 
+						$data['message'] = "Sorry, you already registered.";
+					}else{
+						//$query = ("INSERT INTO `{$table}` (`name`, `email`,`status`, `created_date`) VALUES ('Anynamous','{$email}',1,'". date("Y-m-d") ."')");
+						$username = $params['user_login'];
+						$first_name = $params['first_name']; 
+						$last_name = $params['last_name']; 
+						$password = $params['password']; 
+						$level = $params['level'];
+						$more_membership_levels = $params['more_membership_levels'] = 1;
+						
+						$email = $params['email'];
+						$phone = $params['phone']; 
+						$address_street = $params['address_street']; 
+						$address_city = $params['address_city'];
+						$address_state = $params['address_state']; 
+						$address_zipcode = $params['address_zipcode']; 
+						$url = $params['url']; 
+						
+						$query = ("INSERT INTO `{$table}` 
+						(`member_id`, 
+						`user_name`, 
+						`first_name`, 
+						`last_name`, 
+						`password`, 
+						`member_since`, 
+						`membership_level`, 
+						`more_membership_levels`, 
+						`account_state`, 
+						`last_accessed`, 
+						`last_accessed_from_ip`, 
+						`email`, 
+						`phone`, 
+						`address_street`, 
+						`address_city`, 
+						`address_state`, 
+						`address_zipcode`, 
+						`home_page`, 
+						`country`, 
+						`gender`, 
+						`referrer`, 
+						`extra_info`, 
+						`reg_code`, 
+						`subscription_starts`, 
+						`initial_membership_level`, 
+						`txn_id`, 
+						`subscr_id`, 
+						`company_name`, 
+						`notes`, 
+						`flags`, 
+						`profile_image`) 
+						VALUES 
+						(NULL, 
+						'{$username}', 
+						'{$first_name}', 
+						'{$last_name}', 
+						'{$password}', 
+						'0000-00-00', 
+						'{$level}', 
+						'{$more_membership_levels}', 
+						'pending', 
+						'0000-00-00 00:00:00.000000', 
+						'', 
+						'{$email}',
+						'{$phone}', 
+						'{$address_street}', 
+						'{$address_city}',
+						'{$address_state}', 
+						'{$address_zipcode}', 
+						'{$url}', 
+						NULL, 
+						'not specified', 
+						NULL, 
+						NULL, 
+						NULL, 
+						NULL, 
+						NULL, 
+						'', 
+						'', 
+						'', 
+						NULL, 
+						'0', 
+						''
+						)");
+						
+						$fields = array('Anynamous',
+							$email,
+							1,
+							date('Y-m-d')
+						);
+						if($wpdb->query( 
+							$wpdb->prepare( 
+									$query
+								) 
+							)
+						){
+							$data['error'] = FALSE;
+							$data['message'] = "Thank you for your intereset..";
+						}else{
+							$data['error'] = TRUE; 
+							$data['message'] = "Sorry, unable to submit your request. Please try again later. " . mysql_error();
+						}
+						
+					}
+				}
+				
+								
+			}else{
+				$data['error'] = TRUE;
+				$data['message'] = "Please fill out required field!";
+			}
+			unset($_POST);	
+			
+			if($data['error']){
+				$format = '
+				<div class="error">
+					<p><strong>ERROR</strong>: %s</p>	
+				</div>';
+			}
+			else {
+				$format = '
+				<div class="notice notice-success">
+					<p>%s</p>	
+				</div>';
+			}
+			$data['message'] = sprintf($format,$data['message']);
+			
+			echo json_encode($data);
+		}else{
+			wp_redirect('index.php');
+		} 
+	
+	exit();
+	
+}
+
+function add_member($params){
+	if(!empty($params)){
+		if(!empty($params['email'])){
+			if(!filter_var($params['email'], FILTER_VALIDATE_EMAIL)){
+				$data['error'] = TRUE;
+				$data['message'] = 'Please input valid email';
+			}
+			else{
+				$email = sanitize_text_field($params['email']);
+				global $wpdb;
+				$table = $wpdb->prefix."redis_members_tbl";
+				$hasils = $wpdb->get_results("SELECT * FROM  $table WHERE `email` ='" .$params['email']."'");
+				if(count($hasils) > 0 ){
+					$data['error'] = TRUE; 
+					$data['message'] = "Sorry, you already registered.";
+				}else{
+					$username = $params['username'];
+					$first_name = $params['first_name']; 
+					$last_name = $params['last_name']; 
+					$password = $params['password']; 
+					$level = $params['level'];
+					$more_membership_levels = $params['more_membership_levels'] = 1;
+					
+					$email = $params['email'];
+					$phone = $params['phone']; 
+					$address_street = $params['address_street']; 
+					$address_city = $params['address_city'];
+					$address_state = $params['address_state']; 
+					$address_zipcode = $params['address_zipcode']; 
+					$url = $params['url']; 
+					
+					$query = ("INSERT INTO `{$table}` 
+					(`member_id`, 
+					`user_name`, 
+					`first_name`, 
+					`last_name`, 
+					`password`, 
+					`member_since`, 
+					`membership_level`, 
+					`more_membership_levels`, 
+					`account_state`, 
+					`last_accessed`, 
+					`last_accessed_from_ip`, 
+					`email`, 
+					`phone`, 
+					`address_street`, 
+					`address_city`, 
+					`address_state`, 
+					`address_zipcode`, 
+					`home_page`
+					) 
+					VALUES 
+					(NULL, 
+					'{$username}', 
+					'{$first_name}', 
+					'{$last_name}', 
+					'{$password}', 
+					'0000-00-00', 
+					'{$level}', 
+					'{$more_membership_levels}', 
+					'pending', 
+					'0000-00-00 00:00:00.000000', 
+					'', 
+					'{$email}',
+					'{$phone}', 
+					'{$address_street}', 
+					'{$address_city}',
+					'{$address_state}', 
+					'{$address_zipcode}', 
+					'{$url}' 
+					)");
+					
+					
+
+					if($wpdb->query( 
+						$wpdb->prepare( 
+								$query,null
+							) 
+						)
+					){
+						$data['error'] = FALSE;
+						
+						$data['message'] = "Thank you for your intereset..";
+						
+						set_logged($username,$email);
+						
+					}else{
+						$data['error'] = TRUE; 
+						$data['message'] = "Sorry, unable to submit your request. Please try again later. " . mysql_error();
+					}
+				}
+			}				
+		}
+		else{
+			$data['error'] = TRUE;
+			$data['message'] = "Please fill out required field!";
+		}
+	}
+	
+	return $data;
+}
+
+function is_member_logged_in(){
+	if($_SESSION["membership"]["member_username"]){
+		return true	;
+	}
+	return false;
+}
+
+function set_logged($username=false,$email=false){
+	session_start();
+	$membership = array(
+		"member_username" => $username,
+		"member_email" => $email,
+		"is_member_logged_in" => 200
+	);
+	$_SESSION["membership"] = $membership;
+}
+
+function member_status($level = null){
+	switch($level){
+		case "1" :
+		return "Basic";
+		break;
+		
+		case "2" :
+		return "Bronze";
+		break;
+		
+		case "3" :
+		return "Silver";
+		break;
+		
+		case "4" :
+		return "Gold";
+		break;
+		
+		default:
+		return "Basic";
+		break;
+	}
+}
+
+function add_membership_box(){
+	include REDIS_WP_MEMBERSHIP_PATH."view/frontend/block/header.php";
+}
+
+function add_membership_modal(){
+	include REDIS_WP_MEMBERSHIP_PATH."view/frontend/block/footer.php";
+}
+
+
+function all_members(){
+	global $wpdb;
+	$table = $wpdb->prefix."redis_members_tbl";
+	$results = $wpdb->get_results("SELECT * FROM  $table");
+	return $results;
+}
+
+add_shortcode( 'member_sign_up', 'member_sign_up' );
+
+function member_sign_up(){
+	ob_start();
+	//print_r($_SESSION);
+	if(isset($_POST["submit"])){
+		$_POST["level"] = 1;
+		$result = add_member($_POST);
+		if($result["error"]){
+			$format =  "<div class=\"alert alert-warning\">
+				  <strong>Warning!</strong> %s
+				</div>";
+			echo sprintf($format,$result["message"]);
+			if($_SESSION["membership"]["member_username"]){
+				wp_redirect('index.php');
+				exit;	
+			}
+		}
+		else {
+			$format =  "<div class=\"alert alert-success\">
+				  <strong>Success!</strong> %s
+				</div>";
+			echo sprintf($format,$result["message"]);
+		}
+		
+		
+		
+	}
+
+	$html = '<form class="form-customize" method="POST">
+  <div class="form-group">
+    <label for="email">Email address</label>
+    <input name="email" type="email" class="form-control" id="email" placeholder="Enter email">
+  </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input name="password" type="password" class="form-control" id="password" placeholder="Password">
+  </div>
+  <div class="form-group">
+    <label for="username">Username</label>
+    <input name="username" type="text" class="form-control" id="username" placeholder="Enter Username">
+  </div>
+  <div class="form-group">
+    <label for="first_name">First Name</label>
+    <input name="first_name" type="text" class="form-control" id="first_name" placeholder="Enter First Name">
+  </div>
+  <div class="form-group">
+    <label for="first_name">Last Name</label>
+    <input name="last_name" type="text" class="form-control" id="last_name" placeholder="Enter Last Name">
+  </div>
+  <div class="form-group">
+    <label for="first_name">Phone</label>
+    <input name="phone" type="text" class="form-control" id="phone" placeholder="Enter Phone">
+  </div>
+  <div class="form-group">
+    <label for="first_name">Company</label>
+    <input name="company" type="text" class="form-control" id="company" placeholder="Enter Company">
+  </div>
+  <div class="form-group">
+    <label for="first_name">Website</label>
+    <input name="url" type="text" class="form-control" id="website" placeholder="Enter Website">
+  </div>
+  <div class="form-group">
+  <input type="submit" name="submit" class="btn btn-primary" value="SUBMIT">
+   </div>
+</form>';
+echo $html;
+return ob_get_clean();
+
+}
