@@ -12,6 +12,12 @@ if ( ! is_user_logged_in() ){
 	$is_configured = false;
 }
 	
+	
+if(isset($_GET["started"])){
+	$is_configured = false;
+}	
+	
+	
 ?>
 <div id="page-content">
 	<div id="columns-page" class="one-column regular-page container">		
@@ -56,17 +62,25 @@ if ( ! is_user_logged_in() ){
 				<?php else :   */?>
 				<div class="after_login">
 				<h1>Package prices:</h1>
-				<?php 
-				if(!isset($_SESSION["package_choosed"]) || $_SESSION["package_choosed"]== 57){
-					?>
-					<p class="show_on_free">Try Re Discover Melbourne free for a limited time before moving onto our advanced and featured packages for extra features!</p>
-					<?php 
-				}
-				?>
+				<p class="show_on_free">Start getting noticed online, add your business to Melbourne's fastest growing business directory, it's FREE!</p>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="well text-center" style="position:relative;opacity:0.6;padding:0px 0; height:400px;background-image:url('http://rediscovermelbourne.com.au/wp-content/uploads/2016/10/Re-Discover-Melbourne-.jpg')">
+							<a style="display: inline;
+    text-align: center;
+    padding: 20px 25px;
+    position: absolute;
+    top: 45%;
+    left: 40%;
+    opacity: 100;" href="http://localhost.com/rediscover/add_listing.php?started=true" class="btn-add-business">Add Your Business for FREE</a>
+						</div>
+					<div>
+				</div>
+				
 				
 				<form class="form-listing" method="POST" enctype="multipart/form-data">
 					<div class="step step1 row packages" data-step="1" <?php if($is_configured): echo "style=\"display:none;\""; endif;?>>
-						<div class="col-md-3" style="font-size:11.5px">
+						<!--<div class="col-md-3" style="font-size:11.5px">
 							<div class="well">
 								<h2 class="muted">FREE</h2>
 								<ul style="margin: 10px;">
@@ -79,8 +93,8 @@ if ( ! is_user_logged_in() ){
 								<hr>
 								<p><a data-package="57" class="btn btn-primary choose_pricing btn-primary" href="#"><i class="icon-ok"></i>FREE</a></p>
 							</div>
-						</div>
-						<div class="col-md-3"  style="font-size:11.5px">
+						</div>-->
+						<div class="col-md-4"  style="font-size:11.5px">
 							<div class="well">
 								<h2 class="muted">Advantage</h2>
 								<ul style="margin: 10px;">
@@ -92,15 +106,14 @@ if ( ! is_user_logged_in() ){
 									<li>Have your own page </li>
 									<li>We promote your business on our social media channels</li>
 
-								</ul>          
+								</ul>   
 								<h5 class="choose_pricing btn btn-primary" data-package="77" data-value="6 Months" data-price="269">$269.00 / 6 months</h5>
 								<h5 class="choose_pricing btn btn-primary" data-package="77" data-value="12 Months" data-price="489">$489.00 / 1 Year</h5>
 								<h5 class="choose_pricing btn btn-primary" data-package="77" data-value="24 Months" data-price="895">$895.00 / 2 Years</h3>
-								<h5 class="choose_pricing btn btn-primary" data-package="77" data-value="6 Months" data-price="1">$1 / test</h3>
 								<hr>
 								</div>
 						</div>
-						<div class="col-md-3"  style="font-size:11.5px">
+						<div class="col-md-4"  style="font-size:11.5px">
 							<div class="well">
 								<h2 class="text-warning">FEATURED</h2>
 								<ul style="margin: 10px;">
@@ -110,12 +123,12 @@ if ( ! is_user_logged_in() ){
 								</ul>          
 								<h5 class="choose_pricing btn btn-primary" data-package="58" data-value="6 Months" data-price="399">$399.00 / 6 months</h5>
 								<h5 class="choose_pricing btn btn-primary" data-package="58" data-value="12 Months" data-price="585">$585.00 / 1 Year</h5>
-								<h5 class="choose_pricing btn btn-primary" data-package="58" data-value="24 Months" data-price="995">$995.00 / 2 Years</h5>
+								<h5 class="choose_pricing btn btn-primary" data-package="58" data-value="24 Months" data-price="995">$995.00 / 2 Years</h3>
 								<hr>
 								
 							</div>
 						</div>
-						<div class="col-md-3">
+						<div class="col-md-4">
 							<div class="well">
 								<h2 class="text-info">CUSTOMIZED</h2>
 								<ul style="margin: 10px;">
@@ -215,7 +228,7 @@ if ( ! is_user_logged_in() ){
 
 									<div class="form-group">
 										<label>Address:</label>
-										<textarea  name="address" class="form-control required details"></textarea>
+										<textarea  name="address" class="form-control details"></textarea>
 									</div>
 								</div>
 								<div class="col-md-6">
@@ -266,11 +279,18 @@ if ( ! is_user_logged_in() ){
 								<input type="hidden" name="logo" id="logo-photo">
 								<div class="dropzone dropzone-previews" id="upload-logo"></div>
 							</div>
-							<div class="col-md-4">
+						<div class="col-md-4">
+							<div class="hide_on_free">
 								<label>Upload your business thumbnail</label>
 								<input type="hidden" name="thumbnail" id="thumbnail-photo">
 								<div class="dropzone dropzone-previews" id="upload-thumbnail"></div>
 							</div>
+							<div class="show_on_free" style="display:none;">
+								<label>Upload your business thumbnail</label>
+								<input type="hidden" name="thumbnail" id="thumbnail-photo">
+								<p style="color:red;border: 2px dotted #999;height: 150px;line-height: 200%; padding: 20px;">This Feature is available in Advantage and Featured package, <br>Please upgrade to unlock this feature...</p>
+							</div>
+						</div>
 						</div>
 						
 						<div class="row" style="margin-top:15px;">

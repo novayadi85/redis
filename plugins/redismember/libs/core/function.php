@@ -14,6 +14,7 @@ function member_init_external()
 	add_rewrite_rule( 'conform.php$', 'index.php?members_page=7', 'top' );
 	add_rewrite_rule( 'forgot_pass.php$', 'index.php?members_page=8', 'top' );
 	add_rewrite_rule( 'success.php$', 'index.php?members_page=9', 'top' );
+	add_rewrite_rule( 'started.php$', 'index.php?members_page=10', 'top' );
 
 	my_custom_post_status();
 }
@@ -56,6 +57,9 @@ function member_parse_request( &$wp )
 			break;
 			case "9";
 			include REDIS_WP_MEMBERSHIP_PATH."extra/success.php";
+			break;
+			case "10";
+			include REDIS_WP_MEMBERSHIP_PATH."extra/started.php";
 			break;
 		}
        
