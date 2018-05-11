@@ -38,7 +38,7 @@
 								position: absolute;
 								top: 45%;
 								left: 40%;
-								opacity: 100;" href="http://localhost.com/rediscover/started.php?started=true" class="btn-add-business">Add Your Business for FREE</a>
+								opacity: 100;" href="http://127.0.0.1/redis/started.php?started=true" class="btn-add-business">Add Your Business for FREE</a>
 						</div>
 
 				<?php //endif;?>

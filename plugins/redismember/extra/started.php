@@ -100,7 +100,7 @@ else{
 	<div class="col-md-7">
 		<h2 class="small-header m-t-10">Create you business in 10 minutes or Less</h2>
 		<div class="form">
-			<form>
+			<form method="post" enctype="multipart/form-data">
 				<div class="row">
 					<div class="col-md-12">
 						<div class="form-group">
