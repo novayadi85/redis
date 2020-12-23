@@ -1,10 +1,16 @@
 {
-  "posts": [
-    {
+  "posts": {
+    "about" : {
       "id": 1,
-      "title": "hello"
+      "title": "hello",
+      "text" : "<p>Hello</p>"
+    },
+    "support" : {
+      "id": 1,
+      "title": "hello",
+      "text" : "<p>Hello</p>"
     }
-  ],
+  },
   "profile": {
     "name": "typicode"
   },
